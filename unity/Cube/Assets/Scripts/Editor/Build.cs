@@ -28,7 +28,8 @@ public class Build : MonoBehaviour
 
         EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
 
-        var options = BuildOptions.AcceptExternalModificationsToPlayer;
+        var options = BuildOptions.AllowDebugging;
+        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
         var report = BuildPipeline.BuildPlayer(
             GetEnabledScenes(),
             apkPath,
@@ -38,17 +39,17 @@ public class Build : MonoBehaviour
 
         if (report.summary.result != BuildResult.Succeeded)
             throw new Exception("Build failed");
-   
+
         Copy(buildPath, exportPath);
 
         // Modify build.gradle
-		var build_file = Path.Combine(exportPath, "build.gradle");
-		var build_text = File.ReadAllText(build_file);
-		build_text = build_text.Replace("com.android.application", "com.android.library");
+        var build_file = Path.Combine(exportPath, "build.gradle");
+        var build_text = File.ReadAllText(build_file);
+        build_text = build_text.Replace("com.android.application", "com.android.library");
         build_text = build_text.Replace("implementation fileTree(dir: 'libs', include: ['*.jar'])", "api fileTree(include: ['*.jar'], dir: 'libs')");
         // build_text = build_text.Replace("implementation(name: 'VuforiaWrapper', ext:'aar')", "api(name: 'VuforiaWrapper', ext: 'aar')");
-		build_text = Regex.Replace(build_text, @"\n.*applicationId '.+'.*\n", "\n");
-		File.WriteAllText(build_file, build_text);
+        build_text = Regex.Replace(build_text, @"\n.*applicationId '.+'.*\n", "\n");
+        File.WriteAllText(build_file, build_text);
 
         // Modify AndroidManifest.xml
         var manifest_file = Path.Combine(exportPath, "src/main/AndroidManifest.xml");
@@ -69,7 +70,7 @@ public class Build : MonoBehaviour
 
         EditorUserBuildSettings.iOSBuildConfigType = iOSBuildType.Release;
 
-        var options = BuildOptions.AcceptExternalModificationsToPlayer;
+        var options = BuildOptions.AllowDebugging;
         var report = BuildPipeline.BuildPlayer(
             GetEnabledScenes(),
             exportPath,
@@ -78,7 +79,7 @@ public class Build : MonoBehaviour
         );
 
         if (report.summary.result != BuildResult.Succeeded)
-            throw new Exception("Build failed");   
+            throw new Exception("Build failed");
     }
 
     static void Copy(string source, string destinationPath)
